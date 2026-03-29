@@ -1,0 +1,12 @@
+.teacher-dashboard {
+    min-height: 100vh;
+    background: var(--color-bg);
+}
+
+.leave-preview-card {
+    transition: all var(--transition-base);
+}
+
+.leave-preview-card:hover {
+    transform: translateX(4px);
+}
