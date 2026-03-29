@@ -14,11 +14,13 @@ const client = twilio(
     process.env.TWILIO_AUTH_TOKEN
 );
 
+const router = express.Router();
+
 const VERIFY_SERVICE_SID = process.env.TWILIO_SERVICE_ID;
 const DEV_MODE = process.env.OTP_DEV_MODE === 'true';
 
 // Send OTP
-app.post('/api/otp/send', async (req, res) => {
+router.post('/otp/send', async (req, res) => {
     try {
         const { phoneNumber } = req.body;
 
@@ -70,7 +72,7 @@ app.post('/api/otp/send', async (req, res) => {
 });
 
 // Verify OTP
-app.post('/api/otp/verify', async (req, res) => {
+router.post('/otp/verify', async (req, res) => {
     try {
         const { phoneNumber, code } = req.body;
 
@@ -120,16 +122,26 @@ app.post('/api/otp/verify', async (req, res) => {
 });
 
 // Health check
-app.get('/api/health', (req, res) => {
+router.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'OTP API' });
 });
 
+// Mount router for both local dev and Netlify functions
+app.use('/api', router);
+app.use('/.netlify/functions/api', router);
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`🚀 OTP API server running on http://localhost:${PORT}`);
-    console.log(`📱 Twilio Verify Service: ${VERIFY_SERVICE_SID}`);
-    if (DEV_MODE) {
-        console.log(`🔧 DEV MODE ENABLED - Accepts any 6-digit code (123456, 999999, etc.)`);
-        console.log(`   To use real SMS, set OTP_DEV_MODE=false in .env.local`);
-    }
-});
+
+// Start the server for Render / local development
+if (!process.env.NETLIFY) {
+    app.listen(PORT, () => {
+        console.log(`🚀 OTP API server running on http://localhost:${PORT}`);
+        console.log(`📱 Twilio Verify Service: ${VERIFY_SERVICE_SID}`);
+        if (DEV_MODE) {
+            console.log(`🔧 DEV MODE ENABLED - Accepts any 6-digit code (123456, 999999, etc.)`);
+            console.log(`   To use real SMS, set OTP_DEV_MODE=false in .env.local`);
+        }
+    });
+}
+
+export default app;
