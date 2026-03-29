@@ -1,0 +1,27 @@
+services:
+  # 1. Host the React Frontend
+  - type: web
+    name: attendence-mgt-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    rootDir: attendence_mgt_sys-main
+    
+    # 2. Host the Express Backend API
+  - type: web
+    name: attendence-mgt-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm run start:api
+    rootDir: attendence_mgt_sys-main
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: OTP_DEV_MODE
+        value: "false"
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_SERVICE_ID
+        sync: false
